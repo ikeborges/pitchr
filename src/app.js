@@ -2,14 +2,13 @@ const express = require("express")
 const fileupload = require("express-fileupload")
 const { fromBuffer } = require("pdf2pic")
 const ImageKit = require('imagekit')
+const Deck = require('./models/deck')
 
 const imagekit = new ImageKit({
   publicKey: "public_+RGZRmY9ls6q31O7mEFody74UGY=",
   privateKey: "private_X3k6uOPieFnhASseGSWfh77r6XI=", // Since it's not production code I'll leave it here
   urlEndpoint: "https://ik.imagekit.io/ucmcr6ikh"
 })
-
-const authParams = imagekit.getAuthenticationParameters()
 
 const app = express()
 
@@ -23,16 +22,9 @@ app.use(fileupload({
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
-app.get("/", (req, res) => {
-  const deck = {
-    id: 1,
-    title: "WeFund",
-    author: "Kaique Borges",
-    uploadedAt: "Dec 15, 2022",
-    pages: ["https://ucarecdn.com/30f6ddbb-73e1-4c33-ae67-9fa139a49e03/-/format/auto/-/quality/smart_retina/-/preview/"]
-  }
-
-  res.render('index', { deck })
+app.get("/", async (req, res) => {
+  const decks = await Deck.find().exec()
+  res.render('index', { decks })
 })
 
 app.get("/upload-deck", (req, res) => {
@@ -51,7 +43,6 @@ app.post("/upload-deck", async (req, res) => {
   const images = await fromBuffer(deckFile.data, options).bulk(-1, true)
 
   const imageUrls = []
-
   for (let i = 0; i < images.length; i++) {
     const image = await imagekit.upload({
       fileName: `Image${i}.png`,
@@ -61,7 +52,16 @@ app.post("/upload-deck", async (req, res) => {
     imageUrls.push(image.url)
   }
 
-  res.send(imageUrls)
+  const deck = new Deck({ title, author: username, pages: imageUrls })
+  await deck.save()
+
+  res.redirect(`/decks/${deck._id}`)
+})
+
+app.get("/decks/:id", async (req, res) => {
+  const deck = await Deck.findById(req.params.id).exec()
+
+  res.render('deck', {deck})
 })
 
 module.exports = { app }
