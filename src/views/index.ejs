@@ -10,6 +10,26 @@
 </head>
 <body>
   <%- include('_header') %>
-  <%= message %>
+
+  <div class="px-12">
+    <ul role="list" class="divide-y divide-gray-200 mx-auto max-w-xl">
+      <% decks.forEach(deck => { %>
+      <li class="py-4">
+        <a href="/decks/<%= deck.id %>" class="block">
+          <div class="space-x-3">
+            <div class="space-y-1">
+              <img class="h-full" src="<%= deck.coverUrl %>" alt="First Pitch Deck page">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg"><%= deck.title %> by <%= deck.author %></h3>
+                <p class="text-gray-500"><%= deck.uploadedAt %></p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </li>
+      <% }) %>
+    </ul>
+  </div>
+
 </body>
 </html>
