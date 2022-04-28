@@ -41,18 +41,19 @@ app.post("/upload-deck", async (req, res) => {
   }
 
   const images = await fromBuffer(deckFile.data, options).bulk(-1, true)
-
-  const imageUrls = []
+  const uploadedImages = []
   for (let i = 0; i < images.length; i++) {
-    const image = await imagekit.upload({
+    const image = imagekit.upload({
       fileName: `Image${i}.png`,
       file: images[i].base64
     })
 
-    imageUrls.push(image.url)
+    uploadedImages.push(image)
   }
 
-  const deck = new Deck({ title, author: username, pages: imageUrls })
+  const imageUrls = await Promise.all(uploadedImages)
+
+  const deck = new Deck({ title, author: username, pages: imageUrls.map(item => item.url) })
   await deck.save()
 
   res.redirect(`/decks/${deck._id}`)

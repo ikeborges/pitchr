@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 
 const PORT = process.env.PORT || 3000
 
-mongoose.connect('mongodb+srv://admin:admin@cluster0.ysu1k.mongodb.net/pitchr?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true}) // Also not production
+mongoose.connect('mongodb://root:root@mongo:27017/')
 
 const db = mongoose.connection
 
